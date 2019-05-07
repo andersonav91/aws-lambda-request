@@ -3,23 +3,39 @@ const http = require('http');
 
 handler = (event) => {
 
-    console.log("Entered to the handler...", event);
+    console.log("Entered to the handler...", JSON.stringify(event));
+
+    var name = '';
+    try {
+        name = event.Records[0].s3.object.key;
+    } catch(e) {
+        console.log("Invalid name ", e);
+        name = "None"
+    }
+
+    console.log("File name", name);
 
     const body = {
-        "url": "s3-upload-files.herokuapp.com",
-        "path": "/helloWorld",
-        "body": {}
+        "url": "localhost",
+        "path": "/printFileName",
+        "body": {
+            "name": name
+        }
     };
 
     var post_data = querystring.stringify(
-        {} // empty data at moment
+        body.body
     );
 
     var post_options = {
         host: body.url,
-        port: '443',
+        port: '4567',
         path: body.path,
-        method: 'POST'
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Content-Length': Buffer.byteLength(post_data)
+        }
     };
 
     var post_req = http.request(post_options, function(res) {
